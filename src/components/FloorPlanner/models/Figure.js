@@ -16,6 +16,7 @@ export class Figure {
     this.id = Date.now().toString()
     this.config = this.getConfig(type)
     this.component = FigureComponents[type]
+    this.type = type
   }
 
   getConfig(type) {

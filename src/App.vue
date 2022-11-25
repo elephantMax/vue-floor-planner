@@ -21,6 +21,8 @@ provide('selectFigure', selectFigure)
 
 <style scoped>
 .wrapper {
+  margin-top: 100px;
+  margin-left: 100px;
   position: relative;
 }
 
