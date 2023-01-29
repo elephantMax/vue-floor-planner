@@ -1,5 +1,5 @@
 import { reactive, ref, computed } from '@vue/reactivity'
-
+import { pixelsToMeters } from './pixelsToMeters'
 const LINE_STROKE = '#000'
 const SELECTED_LINE_STROKE = '#faea00'
 
@@ -82,19 +82,119 @@ const useRect = () => {
     )
   })
 
+  const topTextConfig = computed(() => {
+    const { x, y } = position.value
+    const { width } = fullSize.value
+
+    return {
+      x,
+      y: y - 30,
+      text: width,
+      align: 'center',
+      width,
+      fill: '#000',
+    }
+  })
+
+  const bottomTextConfig = computed(() => {
+    const { x, y } = position.value
+    const { height, width } = fullSize.value
+
+    return {
+      x,
+      y: height + y + 20,
+      text: width,
+      align: 'center',
+      width,
+      fill: '#000',
+    }
+  })
+
+  const leftTextConfig = computed(() => {
+    const { x, y } = position.value
+    const { height } = fullSize.value
+
+    return {
+      x: x - 40,
+      y: y + height / 2 - 10,
+      text: height,
+      align: 'center',
+      fill: '#000',
+    }
+  })
+
+  const rightTextConfig = computed(() => {
+    const { x, y } = position.value
+    const { height, width } = fullSize.value
+
+    return {
+      x: x + width + 20,
+      y: y + height / 2 - 10,
+      text: height,
+      align: 'center',
+      fill: '#000',
+    }
+  })
+
+  const borderTextConfigs = computed(() => {
+    return [
+      topTextConfig.value,
+      bottomTextConfig.value,
+      leftTextConfig.value,
+      rightTextConfig.value,
+    ]
+  })
+
+  const lineSizesTextConfigs = computed(() => {
+    const PADDING = 30
+    const FONT_SIZE = 20
+    return lines.value.map((line) => {
+      const { id, points } = line
+      const [startX, startY, endX, endY] = points
+      const x = Math.abs(startX + endX) / 2
+      const y = Math.abs(startY + endY) / 2
+      const length = getLineLength(line)
+      const lengthInMeters = pixelsToMeters(length).toFixed(2)
+      const width = lengthInMeters.length * FONT_SIZE
+      const padding = {
+        x: 0,
+        y: 0,
+      }
+      if (id === 'right') {
+        padding.x += PADDING
+      } else if (id === 'left') {
+        padding.x -= PADDING
+      } else if (id === 'top') {
+        padding.y -= PADDING
+      } else if (id === 'bottom') {
+        padding.y += PADDING
+      }
+      return {
+        x: x + padding.x - width / 2,
+        y: y + padding.y - FONT_SIZE / 2,
+        text: lengthInMeters,
+        width,
+        fontSize: FONT_SIZE,
+        align: 'center',
+        fill: '#fff',
+        lineId: id,
+      }
+    })
+  })
+
   const fullSize = computed(() => {
     const xPositions = circles.map((c) => c.x)
     const xDifferences = xPositions
       .map((x) => xPositions.map((x2) => Math.abs(x - x2)))
       .flat()
-    const width = Math.max(...xDifferences)
+    const width = +Math.max(...xDifferences).toFixed(2)
 
     const yPositions = circles.map((c) => c.y)
     const yDifferences = yPositions
       .map((y) => yPositions.map((y2) => Math.abs(y - y2)))
       .flat()
 
-    const height = Math.max(...yDifferences)
+    const height = +Math.max(...yDifferences).toFixed(2)
     return {
       width,
       height,
@@ -118,12 +218,6 @@ const useRect = () => {
       return 0
     }
     return getLineLength(selectedLine.value)
-  })
-
-  const differentXCords = computed(() => {
-    const xPositions = circles.map((c) => c.x)
-    const set = new Set(xPositions)
-    return [...set]
   })
 
   const updateLineSize = (line, value) => {
@@ -175,10 +269,11 @@ const useRect = () => {
     circles,
     fullSize,
     position,
-    differentXCords,
     selectedLine,
     selectedLineId,
     selectedLineLength,
+    borderTextConfigs,
+    lineSizesTextConfigs,
     updateLineSize,
     getLineLength,
   }

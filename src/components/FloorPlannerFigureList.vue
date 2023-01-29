@@ -1,6 +1,6 @@
 <script setup>
 import { inject } from 'vue'
-import { FigureType } from './models/FigureTypes'
+import { FigureType } from '../models/FigureTypes'
 
 const selectFigure = inject('selectFigure')
 

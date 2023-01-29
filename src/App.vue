@@ -1,7 +1,7 @@
 <script setup>
 import { provide, ref } from 'vue'
-import FloorPlanner from './components/FloorPlanner/FloorPlanner.vue'
-import FloorPlannerPanel from './components/FloorPlanner/FloorPlannerPanel.vue'
+import FloorPlanner from './components/FloorPlanner.vue'
+import FloorPlannerPanel from './components/FloorPlannerPanel.vue'
 
 const planner = ref(null)
 
@@ -21,8 +21,8 @@ provide('selectFigure', selectFigure)
 
 <style scoped>
 .wrapper {
-  margin-top: 100px;
-  margin-left: 100px;
+  width: 100%;
+  height: 100%;
   position: relative;
 }
 

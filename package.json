@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vueuse/core": "^9.12.0",
     "konva": "^8.3.14",
     "vue": "^3.2.41",
     "vue-konva": "^3.0.2"
