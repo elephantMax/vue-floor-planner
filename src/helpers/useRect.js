@@ -1,5 +1,6 @@
 import { reactive, ref, computed } from '@vue/reactivity'
 import { pixelsToMeters } from './pixelsToMeters'
+import { getLineData, calcHypo } from './lineHelper'
 const LINE_STROKE = '#000'
 const SELECTED_LINE_STROKE = '#faea00'
 
@@ -151,9 +152,9 @@ const useRect = () => {
     return lines.value.map((line) => {
       const { id, points } = line
       const [startX, startY, endX, endY] = points
-      const x = Math.abs(startX + endX) / 2
-      const y = Math.abs(startY + endY) / 2
-      const length = getLineLength(line)
+      const x = (startX + endX) / 2
+      const y = (startY + endY) / 2
+      const length = calcHypo(line)
       const lengthInMeters = pixelsToMeters(length).toFixed(2)
       const width = lengthInMeters.length * FONT_SIZE
       const padding = {
@@ -213,11 +214,16 @@ const useRect = () => {
     return lines.value.find((l) => l.id === selectedLineId.value)
   })
 
-  const selectedLineLength = computed(() => {
-    if (!selectedLine.value) {
-      return 0
-    }
-    return getLineLength(selectedLine.value)
+  const selectedLineLength = computed({
+    get() {
+      if (!selectedLine.value) {
+        return 0
+      }
+      return calcHypo(selectedLine.value)
+    },
+    set(value) {
+      updateLineSize(selectedLine.value, value)
+    },
   })
 
   const updateLineSize = (line, value) => {
@@ -226,7 +232,7 @@ const useRect = () => {
     }
     const { id } = line
     const { xDiff, yDiff } = getLineData(line)
-    const lineLength = getLineLength(line)
+    const lineLength = calcHypo(line)
     const additionalPercent = value / lineLength
     const resX = xDiff * additionalPercent
     const resY = yDiff * additionalPercent
@@ -247,23 +253,6 @@ const useRect = () => {
     }
   }
 
-  const getLineLength = (line) => {
-    const { xDiff, yDiff } = getLineData(line)
-    return Math.sqrt(xDiff ** 2 + yDiff ** 2)
-  }
-
-  const getLineData = (line) => {
-    const { points } = line
-    const start = points.slice(0, 2)
-    const end = points.slice(2)
-    const xDiff = start[0] - end[0]
-    const yDiff = start[1] - end[1]
-    return {
-      xDiff,
-      yDiff,
-    }
-  }
-
   return {
     lines,
     circles,
@@ -275,7 +264,6 @@ const useRect = () => {
     borderTextConfigs,
     lineSizesTextConfigs,
     updateLineSize,
-    getLineLength,
   }
 }
 

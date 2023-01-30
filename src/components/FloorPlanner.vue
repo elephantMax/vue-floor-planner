@@ -1,7 +1,8 @@
 <script setup>
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, nextTick } from 'vue'
 import { useRect } from '../helpers/useRect'
 import { useResizeObserver } from '@vueuse/core'
+import FloorPlannerInputBox from './FloorPlannerInputBox.vue'
 
 const konvaConfig = reactive({
   width: 600,
@@ -13,6 +14,7 @@ const rectStartX = ref(0)
 const rectStartY = ref(0)
 const circleStartX = ref([])
 const circleStartY = ref([])
+const inputBoxRef = ref(null)
 
 const {
   circles,
@@ -22,8 +24,6 @@ const {
   selectedLine,
   selectedLineId,
   selectedLineLength,
-  borderTextConfigs,
-  updateLineSize,
   lineSizesTextConfigs,
 } = useRect()
 
@@ -68,13 +68,11 @@ const rectDragStartHandler = (e) => {
   circleStartY.value = circles.map((c) => c.y)
 }
 
-const lineClick = (e, lineId) => {
+const lineClick = async (e, lineId) => {
   e.cancelBubble = true
   selectedLineId.value = lineId
-}
-
-const lineLengthChangeHandler = (e) => {
-  updateLineSize(selectedLine.value, e.target.valueAsNumber)
+  await nextTick()
+  inputBoxRef.value.focus()
 }
 
 useResizeObserver(floorPlannerRef, (entries) => {
@@ -90,13 +88,9 @@ function stageClickHandler() {
 </script>
 
 <template>
-  <template v-if="selectedLineId">
-    <input
-      type="number"
-      :value="selectedLineLength"
-      @change="lineLengthChangeHandler"
-    />
-  </template>
+  <Teleport v-if="selectedLine" to="body">
+    <FloorPlannerInputBox v-model="selectedLineLength" ref="inputBoxRef" />
+  </Teleport>
   <div class="floor-planner" ref="floorPlannerRef">
     <v-stage ref="stage" :config="konvaConfig" @click="stageClickHandler">
       <v-layer>

@@ -7,3 +7,11 @@ import FloorPlannerFigureList from './FloorPlannerFigureList.vue'
     <FloorPlannerFigureList />
   </div>
 </template>
+
+<style lang="scss" scoped>
+.floor-planner-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+</style>

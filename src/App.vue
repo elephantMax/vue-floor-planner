@@ -14,8 +14,8 @@ provide('selectFigure', selectFigure)
 
 <template>
   <div class="wrapper">
-    <FloorPlannerPanel class="panel" />
-    <FloorPlanner ref="planner" />
+    <FloorPlannerPanel />
+    <FloorPlanner />
   </div>
 </template>
 
@@ -24,11 +24,5 @@ provide('selectFigure', selectFigure)
   width: 100%;
   height: 100%;
   position: relative;
-}
-
-.panel {
-  position: absolute;
-  top: 10px;
-  right: 10px;
 }
 </style>
