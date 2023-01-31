@@ -8,7 +8,7 @@ import CanvasLine from './CanvasLine.vue'
 import { pixelsToMeters } from '../helpers/pixelsToMeters'
 import CanvasGrid from './CanvasGrid.vue'
 import { baseCircleConfig } from '../helpers/useFigureConfig'
-import { GRID_CELL_SIZE } from '../enums/constsnts'
+import { GRID_CELL_SIZE } from '../enums/constants'
 
 const konvaConfig = reactive({
   width: 600,

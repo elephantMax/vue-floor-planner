@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-const SELECTED_LINE_STROKE = '#faea00'
+import { SELECTED_LINE_STROKE } from '../enums/constants'
 
 const props = defineProps({
   config: {

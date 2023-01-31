@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 
-import { GRID_CELL_SIZE } from '../enums/constsnts'
+import { GRID_CELL_SIZE } from '../enums/constants'
 
 const props = defineProps({
   width: Number,
