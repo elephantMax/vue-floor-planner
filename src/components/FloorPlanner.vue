@@ -1,14 +1,13 @@
 <script setup>
 import { reactive, ref, computed, nextTick } from 'vue'
-import { useFigure } from '../helpers/useFigure'
 import { calcLinesLength } from '../helpers/lineHelper'
 import { useResizeObserver } from '@vueuse/core'
 import FloorPlannerInputBox from './FloorPlannerInputBox.vue'
 import CanvasLine from './CanvasLine.vue'
 import { pixelsToMeters } from '../helpers/pixelsToMeters'
 import CanvasGrid from './CanvasGrid.vue'
-import { baseCircleConfig } from '../helpers/useFigureConfig'
-import { GRID_CELL_SIZE } from '../enums/constants'
+import { baseCircleConfig, GRID_CELL_SIZE } from '../enums/constants'
+import { useStore } from 'vuex'
 
 const konvaConfig = reactive({
   width: 600,
@@ -21,6 +20,7 @@ const rectStartY = ref(0)
 const circleStartX = ref([])
 const circleStartY = ref([])
 const inputBoxRef = ref(null)
+const stageRef = ref(null)
 
 const tempDraggingCircle = reactive({
   visible: false,
@@ -30,18 +30,39 @@ const tempDraggingCircle = reactive({
   },
 })
 
-const {
-  circles,
-  lines,
-  selectedLine,
-  selectedLineId,
-  selectedLineLength,
-  lineSizesTextConfigs,
-  groupConfig,
-  updateLinesPosition,
-  setFigure,
-  clear,
-} = useFigure()
+const store = useStore()
+
+const lines = computed(() => {
+  return store.getters['lines']
+})
+
+const circles = computed(() => {
+  return store.getters['circles']
+})
+
+const selectedLine = computed(() => {
+  return store.getters['selectedLine']
+})
+
+const groupFigure = computed(() => {
+  return store.getters['groupFigure']
+})
+
+const lineSizesTextConfigs = computed(() => {
+  return store.getters['lineSizesTextConfigs']
+})
+
+const selectedLineLength = computed({
+  get() {
+    return store.getters['selectedLineLength']
+  },
+  set(value) {
+    store.dispatch('updateLineSize', {
+      line: selectedLine.value,
+      value,
+    })
+  },
+})
 
 const infoBlockConfig = computed(() => {
   const width = 300
@@ -94,7 +115,7 @@ const circleDragMoveHandler = (e, shape) => {
   shape.y = position.y
   tempDraggingCircle.config.x = position.x
   tempDraggingCircle.config.y = position.y
-  updateLinesPosition()
+  store.dispatch('updateLinesPosition')
 }
 
 const circleDragStart = (e) => {
@@ -122,7 +143,7 @@ const rectDragMoveHandler = (e) => {
     c.x = beforeStartX + diffX
     c.y = beforeStartY + diffY
   })
-  updateLinesPosition()
+  store.dispatch('updateLinesPosition')
 }
 
 const rectDragStartHandler = (e) => {
@@ -135,8 +156,9 @@ const rectDragStartHandler = (e) => {
 
 const lineClick = async (e, lineId) => {
   e.cancelBubble = true
-  selectedLineId.value = lineId
+  store.commit('setSelectedLine', lineId)
   await nextTick()
+  console.log(selectedLine.value)
   inputBoxRef.value.focus()
 }
 
@@ -148,38 +170,47 @@ useResizeObserver(floorPlannerRef, (entries) => {
 })
 
 function stageClickHandler() {
-  selectedLineId.value = null
+  store.commit('setSelectedLine', null)
 }
 
-defineExpose({ clear, setFigure })
+function getMousePosition(e) {
+  if (!stageRef.value) {
+    return { x: 0, y: 0 }
+  }
+  const stage = stageRef.value.getStage()
+  const { content } = stage
+  const { x: offsetX, y: offsetY } = content.getBoundingClientRect()
+  const { clientX, clientY } = e.evt
+  const xPos = clientX - offsetX
+  const yPos = clientY - offsetY
+  return { x: xPos, y: yPos }
+}
 </script>
 
 <template>
   <Teleport v-if="selectedLine" to="body">
     <FloorPlannerInputBox v-model="selectedLineLength" ref="inputBoxRef" />
   </Teleport>
-  <div
-    v-if="circles.length && lines.length"
-    class="floor-planner"
-    ref="floorPlannerRef"
-  >
-    <v-stage ref="stage" :config="konvaConfig" @click="stageClickHandler">
+  <div class="floor-planner" ref="floorPlannerRef">
+    <v-stage ref="stageRef" :config="konvaConfig" @click="stageClickHandler">
       <v-layer>
         <CanvasGrid :width="konvaConfig.width" :height="konvaConfig.height" />
         <v-rect
-          :config="groupConfig"
+          :config="groupFigure"
           @dragStart="rectDragStartHandler"
           @dragMove="rectDragMoveHandler"
         />
         <!-- <v-text v-for="textConfig in borderTextConfigs" :config="textConfig" /> -->
         <CanvasLine
           v-for="line in lines"
+          :key="line.config.id"
           :config="line.config"
-          :selected="line.config.id === selectedLineId"
+          :selected="line.config.id === selectedLine?.id"
           @click="lineClick"
         />
         <v-text
           v-for="sizeText in lineSizesTextConfigs"
+          :key="sizeText.lineId"
           :config="sizeText"
           @click="lineClick($event, sizeText.lineId)"
         />
@@ -189,6 +220,7 @@ defineExpose({ clear, setFigure })
         />
         <v-circle
           v-for="circle in circles"
+          :key="circle.id"
           :config="circle"
           @dragStart="circleDragStart"
           @dragMove="circleDragMoveHandler($event, circle)"

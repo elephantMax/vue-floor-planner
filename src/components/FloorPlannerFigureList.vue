@@ -1,13 +1,14 @@
 <script setup>
-import { inject } from 'vue'
+import { useStore } from 'vuex'
 import { FigureType } from '../enums/FigureTypes'
 
-const setFigure = inject('setFigure')
+const store = useStore()
 
 const Icon = {
   [FigureType.RECT]: '[]',
   [FigureType.L_FIGURE]: 'Г',
   [FigureType.T_FIGURE]: 'Т',
+  [FigureType.CUSTOM]: 'Р',
 }
 
 const figures = Object.values(FigureType).map((type) => ({
@@ -16,7 +17,7 @@ const figures = Object.values(FigureType).map((type) => ({
 }))
 
 const createFigureHandler = (type) => {
-  setFigure(type)
+  store.dispatch('setFigure', type)
 }
 </script>
 

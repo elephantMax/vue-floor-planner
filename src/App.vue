@@ -1,25 +1,21 @@
 <script setup>
-import { onMounted, provide, ref } from 'vue'
+import { onMounted } from 'vue'
+import { useStore } from 'vuex'
 import FloorPlanner from './components/FloorPlanner.vue'
 import FloorPlannerPanel from './components/FloorPlannerPanel.vue'
+import { FigureType } from './enums/FigureTypes'
 
-const planner = ref(null)
-
-const setFigure = (type) => {
-  planner.value.setFigure(type)
-}
+const store = useStore()
 
 onMounted(() => {
-  setFigure()
+  store.dispatch('setFigure', FigureType.RECT)
 })
-
-provide('setFigure', setFigure)
 </script>
 
 <template>
   <div class="wrapper">
     <FloorPlannerPanel />
-    <FloorPlanner ref="planner" />
+    <FloorPlanner />
   </div>
 </template>
 

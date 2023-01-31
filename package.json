@@ -14,10 +14,16 @@
     "lodash": "^4.17.21",
     "uniqid": "^5.4.0",
     "vue": "^3.2.41",
-    "vue-konva": "^3.0.2"
+    "vue-konva": "^3.0.2",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
+    "@rushstack/eslint-patch": "^1.2.0",
     "@vitejs/plugin-vue": "^3.2.0",
+    "eslint": "^8.33.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-vue": "^9.9.0",
+    "prettier": "2.8.3",
     "sass": "^1.56.1",
     "vite": "^3.2.3"
   }
