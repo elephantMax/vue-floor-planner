@@ -6,6 +6,8 @@ import { useResizeObserver } from '@vueuse/core'
 import FloorPlannerInputBox from './FloorPlannerInputBox.vue'
 import CanvasLine from './CanvasLine.vue'
 import { pixelsToMeters } from '../helpers/pixelsToMeters'
+import CanvasGrid from './CanvasGrid.vue'
+import { baseCircleConfig } from '../helpers/useFigureConfig'
 
 const konvaConfig = reactive({
   width: 600,
@@ -18,6 +20,14 @@ const rectStartY = ref(0)
 const circleStartX = ref([])
 const circleStartY = ref([])
 const inputBoxRef = ref(null)
+
+const tempDraggingCircle = reactive({
+  visible: false,
+  config: {
+    ...baseCircleConfig,
+    draggable: false,
+  },
+})
 
 const {
   circles,
@@ -64,9 +74,41 @@ const perimeterTextConfig = computed(() => {
 const circleDragMoveHandler = (e, shape) => {
   const { target } = e
   const { x, y } = target.position()
-  shape.x = x
-  shape.y = y
+  const { width, height } = target.size()
+  const position = {
+    x,
+    y,
+  }
+  const closestXSnap = Math.round(x / 100) * 100
+  const xDiff = Math.abs(closestXSnap - x)
+  if (xDiff < width / 2) {
+    position.x = closestXSnap
+  }
+  const closestYSnap = Math.round(y / 100) * 100
+  const yDiff = Math.abs(closestYSnap - y)
+  if (yDiff < height / 2) {
+    position.y = closestYSnap
+  }
+  shape.x = position.x
+  shape.y = position.y
+  tempDraggingCircle.config.x = position.x
+  tempDraggingCircle.config.y = position.y
   updateLinesPosition()
+}
+
+const circleDragStart = (e) => {
+  const { x, y } = e.target.position()
+  e.target.fill('transparent')
+  tempDraggingCircle.visible = true
+  tempDraggingCircle.config.x = x
+  tempDraggingCircle.config.y = y
+}
+
+const circleDragEnd = (e) => {
+  e.target.fill('#fff')
+  tempDraggingCircle.visible = false
+  const { x, y } = tempDraggingCircle.config
+  e.target.position({ x, y })
 }
 
 const rectDragMoveHandler = (e) => {
@@ -122,6 +164,7 @@ defineExpose({ clear, setFigure })
   >
     <v-stage ref="stage" :config="konvaConfig" @click="stageClickHandler">
       <v-layer>
+        <CanvasGrid :width="konvaConfig.width" :height="konvaConfig.height" />
         <v-rect
           :config="groupConfig"
           @dragStart="rectDragStartHandler"
@@ -140,9 +183,15 @@ defineExpose({ clear, setFigure })
           @click="lineClick($event, sizeText.lineId)"
         />
         <v-circle
+          v-if="tempDraggingCircle.visible"
+          :config="tempDraggingCircle.config"
+        />
+        <v-circle
           v-for="circle in circles"
           :config="circle"
+          @dragStart="circleDragStart"
           @dragMove="circleDragMoveHandler($event, circle)"
+          @dragEnd="circleDragEnd"
         >
         </v-circle>
         <v-rect :config="infoBlockConfig"></v-rect>

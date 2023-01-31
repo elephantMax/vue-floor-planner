@@ -5,7 +5,7 @@ import uniqid from 'uniqid'
 
 const LINE_STROKE = '#000'
 
-const baseCircleConfig = {
+export const baseCircleConfig = {
   fill: '#fff',
   radius: 10,
   draggable: true,
