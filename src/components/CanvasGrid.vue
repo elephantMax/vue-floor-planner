@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 
-const CELL_SIZE = 100
+import { GRID_CELL_SIZE } from '../enums/constsnts'
 
 const props = defineProps({
   width: Number,
@@ -10,15 +10,15 @@ const props = defineProps({
 
 const lines = computed(() => {
   const array = []
-  const rows = Math.ceil(props.width / CELL_SIZE)
-  const columns = Math.ceil(props.height / CELL_SIZE)
+  const rows = Math.ceil(props.width / GRID_CELL_SIZE)
+  const columns = Math.ceil(props.height / GRID_CELL_SIZE)
   for (let row = 0; row < rows; row++) {
-    const x = row * CELL_SIZE
+    const x = row * GRID_CELL_SIZE
     const newLine = createLine({ x, points: [0, 0, 0, props.height] })
     array.push(newLine)
   }
   for (let column = 0; column < columns; column++) {
-    const y = column * CELL_SIZE
+    const y = column * GRID_CELL_SIZE
     const newLine = createLine({ y, points: [0, 0, props.width, 0] })
     array.push(newLine)
   }

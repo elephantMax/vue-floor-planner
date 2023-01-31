@@ -8,6 +8,7 @@ import CanvasLine from './CanvasLine.vue'
 import { pixelsToMeters } from '../helpers/pixelsToMeters'
 import CanvasGrid from './CanvasGrid.vue'
 import { baseCircleConfig } from '../helpers/useFigureConfig'
+import { GRID_CELL_SIZE } from '../enums/constsnts'
 
 const konvaConfig = reactive({
   width: 600,
@@ -79,12 +80,12 @@ const circleDragMoveHandler = (e, shape) => {
     x,
     y,
   }
-  const closestXSnap = Math.round(x / 100) * 100
+  const closestXSnap = Math.round(x / GRID_CELL_SIZE) * GRID_CELL_SIZE
   const xDiff = Math.abs(closestXSnap - x)
   if (xDiff < width / 2) {
     position.x = closestXSnap
   }
-  const closestYSnap = Math.round(y / 100) * 100
+  const closestYSnap = Math.round(y / GRID_CELL_SIZE) * GRID_CELL_SIZE
   const yDiff = Math.abs(closestYSnap - y)
   if (yDiff < height / 2) {
     position.y = closestYSnap
