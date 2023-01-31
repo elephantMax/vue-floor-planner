@@ -4,7 +4,8 @@ const calcHypo = (line) => {
 }
 
 const getLineData = (line) => {
-  const { points } = line
+  const { config } = line
+  const { points } = config
   const start = points.slice(0, 2)
   const end = points.slice(2)
   const xDiff = start[0] - end[0]

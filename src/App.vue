@@ -15,7 +15,7 @@ provide('selectFigure', selectFigure)
 <template>
   <div class="wrapper">
     <FloorPlannerPanel />
-    <FloorPlanner />
+    <FloorPlanner ref="planner" />
   </div>
 </template>
 

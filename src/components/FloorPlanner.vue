@@ -1,8 +1,9 @@
 <script setup>
 import { reactive, ref, computed, nextTick } from 'vue'
-import { useRect } from '../helpers/useRect'
+import { useFigure } from '../helpers/useFigure'
 import { useResizeObserver } from '@vueuse/core'
 import FloorPlannerInputBox from './FloorPlannerInputBox.vue'
+import CanvasLine from './CanvasLine.vue'
 
 const konvaConfig = reactive({
   width: 600,
@@ -19,33 +20,21 @@ const inputBoxRef = ref(null)
 const {
   circles,
   lines,
-  fullSize,
-  position,
   selectedLine,
   selectedLineId,
   selectedLineLength,
   lineSizesTextConfigs,
-} = useRect()
-
-const groupConfig = computed(() => {
-  const { width, height } = fullSize.value
-  const { x, y } = position.value
-  return {
-    x: x - 10,
-    y: y - 10,
-    stroke: 'black',
-    strokeWidth: 1,
-    width: width + 20,
-    height: height + 20,
-    draggable: true,
-  }
-})
+  groupConfig,
+  updateLinesPosition,
+  clear,
+} = useFigure()
 
 const circleDragMoveHandler = (e, shape) => {
   const { target } = e
   const { x, y } = target.position()
   shape.x = x
   shape.y = y
+  updateLinesPosition()
 }
 
 const rectDragMoveHandler = (e) => {
@@ -58,6 +47,7 @@ const rectDragMoveHandler = (e) => {
     c.x = beforeStartX + diffX
     c.y = beforeStartY + diffY
   })
+  updateLinesPosition()
 }
 
 const rectDragStartHandler = (e) => {
@@ -85,6 +75,8 @@ useResizeObserver(floorPlannerRef, (entries) => {
 function stageClickHandler() {
   selectedLineId.value = null
 }
+
+defineExpose({ clear })
 </script>
 
 <template>
@@ -100,10 +92,11 @@ function stageClickHandler() {
           @dragMove="rectDragMoveHandler"
         />
         <!-- <v-text v-for="textConfig in borderTextConfigs" :config="textConfig" /> -->
-        <v-line
+        <CanvasLine
           v-for="line in lines"
-          :config="line"
-          @click="lineClick($event, line.id)"
+          :config="line.config"
+          :selected="line.config.id === selectedLineId"
+          @click="lineClick"
         />
         <v-text
           v-for="sizeText in lineSizesTextConfigs"
