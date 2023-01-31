@@ -1,15 +1,19 @@
 <script setup>
-import { provide, ref } from 'vue'
+import { onMounted, provide, ref } from 'vue'
 import FloorPlanner from './components/FloorPlanner.vue'
 import FloorPlannerPanel from './components/FloorPlannerPanel.vue'
 
 const planner = ref(null)
 
-const selectFigure = (type) => {
-  planner.value.selectFigure(type)
+const setFigure = (type) => {
+  planner.value.setFigure(type)
 }
 
-provide('selectFigure', selectFigure)
+onMounted(() => {
+  setFigure()
+})
+
+provide('setFigure', setFigure)
 </script>
 
 <template>

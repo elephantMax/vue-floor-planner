@@ -26,6 +26,7 @@ const {
   lineSizesTextConfigs,
   groupConfig,
   updateLinesPosition,
+  setFigure,
   clear,
 } = useFigure()
 
@@ -41,7 +42,7 @@ const rectDragMoveHandler = (e) => {
   const { x, y } = e.target.position()
   const diffX = x - rectStartX.value
   const diffY = y - rectStartY.value
-  circles.forEach((c, index) => {
+  circles.value.forEach((c, index) => {
     const beforeStartX = circleStartX.value[index]
     const beforeStartY = circleStartY.value[index]
     c.x = beforeStartX + diffX
@@ -54,8 +55,8 @@ const rectDragStartHandler = (e) => {
   const { x, y } = e.target.position()
   rectStartX.value = x
   rectStartY.value = y
-  circleStartX.value = circles.map((c) => c.x)
-  circleStartY.value = circles.map((c) => c.y)
+  circleStartX.value = circles.value.map((c) => c.x)
+  circleStartY.value = circles.value.map((c) => c.y)
 }
 
 const lineClick = async (e, lineId) => {
@@ -76,14 +77,18 @@ function stageClickHandler() {
   selectedLineId.value = null
 }
 
-defineExpose({ clear })
+defineExpose({ clear, setFigure })
 </script>
 
 <template>
   <Teleport v-if="selectedLine" to="body">
     <FloorPlannerInputBox v-model="selectedLineLength" ref="inputBoxRef" />
   </Teleport>
-  <div class="floor-planner" ref="floorPlannerRef">
+  <div
+    v-if="circles.length && lines.length"
+    class="floor-planner"
+    ref="floorPlannerRef"
+  >
     <v-stage ref="stage" :config="konvaConfig" @click="stageClickHandler">
       <v-layer>
         <v-rect

@@ -6,12 +6,12 @@ import { useFigureConfig } from './useFigureConfig'
 const useFigure = () => {
   const selectedLineId = ref(null)
 
-  const { circles, lines, clear } = useFigureConfig(null)
+  const { circles, lines, clear, setFigure } = useFigureConfig(null)
 
   const lineSizesTextConfigs = computed(() => {
     const PADDING = 30
     const FONT_SIZE = 20
-    return lines.map((line) => {
+    return lines.value.map((line) => {
       const { config, circles } = line
       const { id } = config
       const { start, end } = circles
@@ -38,13 +38,13 @@ const useFigure = () => {
   })
 
   const fullSize = computed(() => {
-    const xPositions = circles.map((c) => c.x)
+    const xPositions = circles.value.map((c) => c.x)
     const xDifferences = xPositions
       .map((x) => xPositions.map((x2) => Math.abs(x - x2)))
       .flat()
     const width = +Math.max(...xDifferences).toFixed(2)
 
-    const yPositions = circles.map((c) => c.y)
+    const yPositions = circles.value.map((c) => c.y)
     const yDifferences = yPositions
       .map((y) => yPositions.map((y2) => Math.abs(y - y2)))
       .flat()
@@ -57,15 +57,15 @@ const useFigure = () => {
   })
 
   const position = computed(() => {
-    const xPositions = circles.map((c) => c.x)
-    const yPositions = circles.map((c) => c.y)
+    const xPositions = circles.value.map((c) => c.x)
+    const yPositions = circles.value.map((c) => c.y)
     const x = Math.min(...xPositions)
     const y = Math.min(...yPositions)
     return { x, y }
   })
 
   const selectedLine = computed(() => {
-    return lines.find((l) => l.config.id === selectedLineId.value)
+    return lines.value.find((l) => l.config.id === selectedLineId.value)
   })
 
   const selectedLineLength = computed({
@@ -113,7 +113,7 @@ const useFigure = () => {
   }
 
   const updateLinesPosition = () => {
-    lines.forEach((line) => {
+    lines.value.forEach((line) => {
       const { config, circles } = line
       const { start, end } = circles
       config.points = [start.x, start.y, end.x, end.y]
@@ -133,6 +133,7 @@ const useFigure = () => {
     updateLineSize,
     updateLinesPosition,
     clear,
+    setFigure,
   }
 }
 

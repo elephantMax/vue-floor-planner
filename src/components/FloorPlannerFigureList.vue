@@ -1,8 +1,8 @@
 <script setup>
 import { inject } from 'vue'
-import { FigureType } from '../models/FigureTypes'
+import { FigureType } from '../enums/FigureTypes'
 
-const selectFigure = inject('selectFigure')
+const setFigure = inject('setFigure')
 
 const Icon = {
   [FigureType.RECT]: '[]',
@@ -16,7 +16,7 @@ const figures = Object.values(FigureType).map((type) => ({
 }))
 
 const createFigureHandler = (type) => {
-  selectFigure(type)
+  setFigure(type)
 }
 </script>
 
@@ -43,6 +43,7 @@ const createFigureHandler = (type) => {
   font-weight: bold;
   padding: 10px;
   border: 1px black solid;
+  cursor: pointer;
 
   &:not(:last-child) {
     margin-bottom: 10px;
