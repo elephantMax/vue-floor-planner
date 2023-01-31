@@ -33,7 +33,7 @@ defineExpose({ focus })
 </script>
 <template>
   <div class="floor-planner-input-box">
-    <input v-model.lazy="value" ref="inputRef" :min="0.01" type="number" />
+    <input v-model.lazy="value" ref="inputRef" :min="0" type="number" />
   </div>
 </template>
 

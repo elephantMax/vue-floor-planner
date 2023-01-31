@@ -16,4 +16,11 @@ const getLineData = (line) => {
   }
 }
 
-export { calcHypo, getLineData }
+const calcLinesLength = (lines) => {
+  return lines.reduce((acc, line) => {
+    const hypo = calcHypo(line)
+    return acc + hypo
+  }, 0)
+}
+
+export { calcHypo, getLineData, calcLinesLength }

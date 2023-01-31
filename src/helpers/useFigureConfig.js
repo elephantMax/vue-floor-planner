@@ -23,7 +23,7 @@ const defaultState = () => ({
 })
 
 const defaultFigurePoints = {
-  [FigureType.RECT]: [50, 50, 150, 50, 150, 150, 50, 150],
+  [FigureType.RECT]: [50, 50, 250, 50, 250, 250, 50, 250],
   [FigureType.T_FIGURE]: [
     50, 50, 350, 50, 350, 150, 250, 150, 250, 350, 150, 350, 150, 150, 50, 150,
   ],

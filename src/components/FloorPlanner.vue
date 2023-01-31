@@ -1,9 +1,11 @@
 <script setup>
 import { reactive, ref, computed, nextTick } from 'vue'
 import { useFigure } from '../helpers/useFigure'
+import { calcLinesLength } from '../helpers/lineHelper'
 import { useResizeObserver } from '@vueuse/core'
 import FloorPlannerInputBox from './FloorPlannerInputBox.vue'
 import CanvasLine from './CanvasLine.vue'
+import { pixelsToMeters } from '../helpers/pixelsToMeters'
 
 const konvaConfig = reactive({
   width: 600,
@@ -29,6 +31,35 @@ const {
   setFigure,
   clear,
 } = useFigure()
+
+const infoBlockConfig = computed(() => {
+  const width = 300
+  const height = 100
+  const padding = 25
+  const xPos = konvaConfig.width - width - padding
+  const yPos = konvaConfig.height - height - padding
+  return {
+    width,
+    height,
+    stroke: '#555',
+    strokeWidth: 5,
+    x: xPos,
+    y: yPos,
+  }
+})
+
+const perimeterTextConfig = computed(() => {
+  const padding = 10
+  const perimeterInPixels = calcLinesLength(lines.value)
+  const perimeter = pixelsToMeters(perimeterInPixels).toFixed(2)
+  return {
+    width: infoBlockConfig.value.width,
+    text: `P = ${perimeter}`,
+    x: infoBlockConfig.value.x + padding,
+    y: infoBlockConfig.value.y + padding,
+    fontSize: 20,
+  }
+})
 
 const circleDragMoveHandler = (e, shape) => {
   const { target } = e
@@ -114,6 +145,8 @@ defineExpose({ clear, setFigure })
           @dragMove="circleDragMoveHandler($event, circle)"
         >
         </v-circle>
+        <v-rect :config="infoBlockConfig"></v-rect>
+        <v-text :config="perimeterTextConfig" />
       </v-layer>
     </v-stage>
   </div>
