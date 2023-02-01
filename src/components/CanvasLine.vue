@@ -15,12 +15,26 @@ const props = defineProps({
 
 const emit = defineEmits(['click'])
 
-const lineConfig = computed(() => {
+const commonConfig = computed(() => {
   const config = { ...props.line.config }
   if (props.selected) {
     config.stroke = SELECTED_LINE_STROKE
   }
   return config
+})
+
+const lineConfig = computed(() => {
+  return {
+    ...commonConfig.value,
+    visible: !props.selected,
+  }
+})
+
+const arrowConfig = computed(() => {
+  return {
+    ...commonConfig.value,
+    visible: props.selected,
+  }
 })
 
 const clickHandler = (e) => {
@@ -29,6 +43,6 @@ const clickHandler = (e) => {
 </script>
 
 <template>
-  <v-arrow v-if="selected" :config="lineConfig" @click="clickHandler" />
-  <v-line v-else :config="lineConfig" @click="clickHandler" />
+  <v-arrow :config="arrowConfig" @click="clickHandler" />
+  <v-line :config="lineConfig" @click="clickHandler" />
 </template>
