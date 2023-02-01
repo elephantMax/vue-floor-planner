@@ -49,7 +49,8 @@ const store = createStore({
       commit('setFigure', config)
       commit('setDrawMode', false)
     },
-    setCustomFigure({ commit }, config) {
+    setCustomFigure({ commit }, points) {
+      const config = getConfigByPoints(points)
       commit('setFigure', config)
       commit('setDrawMode', false)
     },

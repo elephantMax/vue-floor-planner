@@ -1,10 +1,10 @@
 <script setup>
 import { ref, computed, reactive, nextTick } from 'vue'
 import { useStore } from 'vuex'
-import { baseCircleConfig, GRID_CELL_SIZE } from '../enums/constants'
-import CalculatedInfo from './CalculatedInfo.vue'
-import CanvasLine from './CanvasLine.vue'
-import FloorPlannerInputBox from './FloorPlannerInputBox.vue'
+import { baseCircleConfig, GRID_CELL_SIZE } from '../../enums/constants'
+import CalculatedInfo from '../CalculatedInfo.vue'
+import CanvasLine from '../CanvasLine.vue'
+import FloorPlannerInputBox from '../FloorPlannerInputBox.vue'
 
 defineProps({
   width: Number,

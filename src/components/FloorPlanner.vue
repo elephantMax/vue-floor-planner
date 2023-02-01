@@ -3,7 +3,8 @@ import { reactive, ref, computed } from 'vue'
 import { useResizeObserver } from '@vueuse/core'
 import CanvasGrid from './CanvasGrid.vue'
 import { useStore } from 'vuex'
-import FigureLayer from './FigureLayer.vue'
+import FigureLayer from './Layers/FigureLayer.vue'
+import CreateLayer from './Layers/CreateLayer.vue'
 
 const konvaConfig = reactive({
   width: 600,
@@ -11,8 +12,11 @@ const konvaConfig = reactive({
 })
 
 const floorPlannerRef = ref(null)
-
 const stageRef = ref(null)
+const createLayerRef = ref(null)
+const mouseMoveEvent = reactive({
+  active: false,
+})
 
 const store = useStore()
 
@@ -35,6 +39,29 @@ function stageClickHandler(e) {
   }
 }
 
+function stageMouseDownHandler() {
+  if (!drawMode.value) {
+    return
+  }
+  mouseMoveEvent.active = true
+}
+
+function stageMouseUpHandler() {
+  if (!drawMode.value) {
+    return
+  }
+  mouseMoveEvent.active = false
+  const pointObjects = createLayerRef.value.getMarkedPoints()
+  createCustomFigure(pointObjects)
+}
+
+const createCustomFigure = (points) => {
+  const arrayOfPoints = points.reduce((acc, { x, y }) => {
+    return [...acc, x, y]
+  }, [])
+  store.dispatch('setCustomFigure', arrayOfPoints)
+}
+
 function getMousePosition(e) {
   if (!stageRef.value) {
     return { x: 0, y: 0 }
@@ -51,13 +78,27 @@ function getMousePosition(e) {
 
 <template>
   <div class="floor-planner" ref="floorPlannerRef">
-    <v-stage ref="stageRef" :config="konvaConfig" @click="stageClickHandler">
+    <v-stage
+      ref="stageRef"
+      :config="konvaConfig"
+      @click="stageClickHandler"
+      @mousedown="stageMouseDownHandler"
+      @mouseup="stageMouseUpHandler"
+    >
       <v-layer>
         <CanvasGrid :width="konvaConfig.width" :height="konvaConfig.height" />
         <FigureLayer
           v-if="!drawMode"
           :width="konvaConfig.width"
           :height="konvaConfig.height"
+        />
+        <CreateLayer
+          v-else
+          ref="createLayerRef"
+          :width="konvaConfig.width"
+          :height="konvaConfig.height"
+          :mouse-active="mouseMoveEvent.active"
+          @limit="createCustomFigure"
         />
       </v-layer>
     </v-stage>
