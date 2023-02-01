@@ -29,5 +29,6 @@ const clickHandler = (e) => {
 </script>
 
 <template>
-  <v-line :config="lineConfig" @click="clickHandler" />
+  <v-arrow v-if="selected" :config="lineConfig" @click="clickHandler" />
+  <v-line v-else :config="lineConfig" @click="clickHandler" />
 </template>

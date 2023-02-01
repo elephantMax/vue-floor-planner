@@ -7,7 +7,6 @@ import CanvasGrid from './CanvasGrid.vue'
 import { baseCircleConfig, GRID_CELL_SIZE } from '../enums/constants'
 import { useStore } from 'vuex'
 import CalculatedInfo from './CalculatedInfo.vue'
-import { setLineLength } from '../helpers/lineHelper'
 
 const konvaConfig = reactive({
   width: 600,
@@ -70,15 +69,6 @@ const selectedLineLength = computed({
       value,
     })
   },
-})
-
-const arrowConfig = computed(() => {
-  if (!selectedLine.value) {
-    return {}
-  }
-  const cloneLine = JSON.parse(JSON.stringify(selectedLine.value))
-  setLineLength(cloneLine, selectedLineLength.value / 2)
-  return cloneLine.config
 })
 
 const circleDragMoveHandler = (e, shape) => {
@@ -148,19 +138,28 @@ const lineClick = (e, line) => {
     return
   }
   const { id } = line.config
-  const isSelected = selectedLineId.value === id
-  if (isSelected) {
-    store.dispatch('switchLineDirection', line)
-  }
+  toggleDirection(line)
   store.commit('setSelectedLine', id)
   focusInput()
 }
 
 const selectLine = (e, lineId) => {
   e.cancelBubble = true
+  if (selectedLine.value) {
+    toggleDirection(selectedLine.value)
+  }
   store.commit('setSelectedLine', lineId)
   focusInput()
 }
+
+const toggleDirection = (line) => {
+  const { id } = line.config
+  const isSelected = selectedLineId.value === id
+  if (isSelected) {
+    store.dispatch('switchLineDirection', line)
+  }
+}
+
 const focusInput = async () => {
   await nextTick()
   inputBoxRef.value?.focus()
@@ -209,7 +208,6 @@ function getMousePosition(e) {
           @dragStart="rectDragStartHandler"
           @dragMove="rectDragMoveHandler"
         />
-        <v-arrow v-if="selectedLine" :config="arrowConfig" />
         <CanvasLine
           v-for="line in lines"
           :key="line.config.id"
