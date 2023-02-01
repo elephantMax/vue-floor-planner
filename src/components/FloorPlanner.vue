@@ -31,12 +31,8 @@ useResizeObserver(floorPlannerRef, (entries) => {
   konvaConfig.height = height
 })
 
-function stageClickHandler(e) {
+function stageClickHandler() {
   store.commit('setSelectedLine', null)
-  if (drawMode.value) {
-    const pos = getMousePosition(e)
-    store.dispatch('pushPoint', pos)
-  }
 }
 
 function stageMouseDownHandler() {

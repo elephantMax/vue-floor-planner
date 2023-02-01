@@ -8,7 +8,6 @@ const defaultStore = () => ({
   drawMode: false,
   selectedLineId: null,
   figure: null,
-  drawnPoints: [],
 })
 
 const store = createStore({
@@ -24,23 +23,12 @@ const store = createStore({
         state.selectedLineId = null
         return
       }
-      state.drawnPoints = []
     },
     setSelectedLine(state, lineId) {
       if (state.drawMode) {
         return
       }
       state.selectedLineId = lineId
-    },
-    setDrawnPoints(state, payload) {
-      state.drawnPoints = payload
-    },
-    pushDrawPoint(state, point) {
-      const { x, y } = point
-      if (state.drawnPoints.length < 40) {
-        return state.drawnPoints.push(x, y)
-      }
-      console.warn('Максимум 20 точек')
     },
   },
   actions: {
@@ -53,15 +41,6 @@ const store = createStore({
       const config = getConfigByPoints(points)
       commit('setFigure', config)
       commit('setDrawMode', false)
-    },
-    pushPoint({ getters, commit }, point) {
-      const { drawMode, drawnPoints, figure } = getters
-      if (!drawMode) {
-        return
-      }
-      commit('pushDrawPoint', point)
-      const config = getConfigByPoints(drawnPoints)
-      commit('setFigure', { ...figure, ...config })
     },
     switchLineDirection({ dispatch }, line) {
       const { circles } = line
@@ -98,7 +77,6 @@ const store = createStore({
       return getters.figure?.circles || []
     },
     drawMode: (s) => s.drawMode,
-    drawnPoints: (s) => s.drawnPoints,
     selectedLineId: (s) => s.selectedLineId,
     selectedLine: (state, getters) => {
       const { lines } = getters

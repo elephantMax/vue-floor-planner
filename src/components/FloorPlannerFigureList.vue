@@ -27,23 +27,9 @@ const items = computed(() => {
     .filter(({ visible }) => visible)
 })
 
-const drawnPoints = computed(() => {
-  return store.getters['drawnPoints']
-})
-
 const drawMode = computed(() => {
   return store.getters['drawMode']
 })
-
-const canSaveCustomFigure = computed(() => {
-  return drawnPoints.value.length > 4
-})
-
-const save = () => {
-  if (canSaveCustomFigure.value) {
-    store.commit('setDrawMode', false)
-  }
-}
 
 const cancel = () => {
   store.dispatch('setFigure', null)
@@ -62,13 +48,6 @@ const cancel = () => {
     </div>
     <template v-if="drawMode">
       <div class="figure-item" @click="cancel">Отмена</div>
-      <div
-        class="figure-item"
-        :class="{ disabled: !canSaveCustomFigure }"
-        @click="save"
-      >
-        Сохранить
-      </div>
     </template>
   </div>
 </template>
