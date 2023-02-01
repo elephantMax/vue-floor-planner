@@ -61,6 +61,7 @@ const cancel = () => {
       {{ item.icon }}
     </div>
     <template v-if="drawMode">
+      <div class="figure-item" @click="cancel">Отмена</div>
       <div
         class="figure-item"
         :class="{ disabled: !canSaveCustomFigure }"
@@ -68,7 +69,6 @@ const cancel = () => {
       >
         Сохранить
       </div>
-      <div class="figure-item" @click="cancel">Отмена</div>
     </template>
   </div>
 </template>
