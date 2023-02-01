@@ -12,7 +12,7 @@ const baseCircleConfig = {
 
 const baseLineConfig = {
   stroke: LINE_STROKE,
-  strokeWidth: 5,
+  strokeWidth: 12,
 }
 
 export {

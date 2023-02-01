@@ -24,7 +24,7 @@ const lineConfig = computed(() => {
 })
 
 const clickHandler = (e) => {
-  emit('click', e, props.line.config.id)
+  emit('click', e, props.line)
 }
 </script>
 

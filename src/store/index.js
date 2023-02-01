@@ -1,7 +1,7 @@
 import { createStore } from 'vuex'
 import { TEXT_FONT_SIZE } from '../enums/constants'
 import { getConfigByPoints, getFigureConfig } from '../helpers/getFigureConfig'
-import { calcHypo, getLineData } from '../helpers/lineHelper'
+import { calcHypo, setLineLength } from '../helpers/lineHelper'
 import { pixelsToMeters } from '../helpers/pixelsToMeters'
 
 const defaultStore = () => ({
@@ -62,21 +62,18 @@ const store = createStore({
       const config = getConfigByPoints(drawnPoints)
       commit('setFigure', { ...figure, ...config })
     },
+    switchLineDirection({ dispatch }, line) {
+      const { circles } = line
+      const { start, end } = circles
+      circles.start = end
+      circles.end = start
+      dispatch('updateLinesPosition')
+    },
     updateLineSize({ dispatch }, { line, value }) {
       if (!value) {
         return
       }
-      const { circles } = line
-      const { xDiff, yDiff } = getLineData(line)
-      const lineLength = calcHypo(line)
-      const additionalPercent = value / lineLength
-      const resX = xDiff * additionalPercent
-      const resY = yDiff * additionalPercent
-      const resXDiff = xDiff - resX
-      const resYDiff = yDiff - resY
-      const { end } = circles
-      end.x += resXDiff
-      end.y += resYDiff
+      setLineLength(line, value)
       dispatch('updateLinesPosition')
     },
     updateLinesPosition({ state }) {
@@ -101,6 +98,7 @@ const store = createStore({
     },
     drawMode: (s) => s.drawMode,
     drawnPoints: (s) => s.drawnPoints,
+    selectedLineId: (s) => s.selectedLineId,
     selectedLine: (state, getters) => {
       const { lines } = getters
       return lines.find((l) => l.config.id === state.selectedLineId)

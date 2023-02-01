@@ -7,6 +7,7 @@ import CanvasGrid from './CanvasGrid.vue'
 import { baseCircleConfig, GRID_CELL_SIZE } from '../enums/constants'
 import { useStore } from 'vuex'
 import CalculatedInfo from './CalculatedInfo.vue'
+import { setLineLength } from '../helpers/lineHelper'
 
 const konvaConfig = reactive({
   width: 600,
@@ -39,6 +40,10 @@ const circles = computed(() => {
   return store.getters['circles']
 })
 
+const selectedLineId = computed(() => {
+  return store.getters['selectedLineId']
+})
+
 const selectedLine = computed(() => {
   return store.getters['selectedLine']
 })
@@ -65,6 +70,15 @@ const selectedLineLength = computed({
       value,
     })
   },
+})
+
+const arrowConfig = computed(() => {
+  if (!selectedLine.value) {
+    return {}
+  }
+  const cloneLine = JSON.parse(JSON.stringify(selectedLine.value))
+  setLineLength(cloneLine, selectedLineLength.value / 2)
+  return cloneLine.config
 })
 
 const circleDragMoveHandler = (e, shape) => {
@@ -128,14 +142,28 @@ const rectDragStartHandler = (e) => {
   circleStartY.value = circles.value.map((c) => c.y)
 }
 
-const lineClick = async (e, lineId) => {
+const lineClick = (e, line) => {
   e.cancelBubble = true
   if (drawMode.value) {
     return
   }
+  const { id } = line.config
+  const isSelected = selectedLineId.value === id
+  if (isSelected) {
+    store.dispatch('switchLineDirection', line)
+  }
+  store.commit('setSelectedLine', id)
+  focusInput()
+}
+
+const selectLine = (e, lineId) => {
+  e.cancelBubble = true
   store.commit('setSelectedLine', lineId)
+  focusInput()
+}
+const focusInput = async () => {
   await nextTick()
-  inputBoxRef.value.focus()
+  inputBoxRef.value?.focus()
 }
 
 useResizeObserver(floorPlannerRef, (entries) => {
@@ -181,18 +209,19 @@ function getMousePosition(e) {
           @dragStart="rectDragStartHandler"
           @dragMove="rectDragMoveHandler"
         />
+        <v-arrow v-if="selectedLine" :config="arrowConfig" />
         <CanvasLine
           v-for="line in lines"
           :key="line.config.id"
           :line="line"
-          :selected="line.config.id === selectedLine?.config?.id"
+          :selected="line.config.id === selectedLineId"
           @click="lineClick"
         />
         <v-text
           v-for="sizeText in lineSizesTextConfigs"
           :key="sizeText.lineId"
           :config="sizeText"
-          @click="lineClick($event, sizeText.lineId)"
+          @click="selectLine($event, sizeText.lineId)"
         />
         <v-circle
           v-if="tempDraggingCircle.visible"

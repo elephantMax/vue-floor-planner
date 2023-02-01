@@ -1,3 +1,5 @@
+import { circlesToPoints } from './getFigureConfig'
+
 const calcHypo = (line) => {
   const { xDiff, yDiff } = getLineData(line)
   return Math.sqrt(xDiff ** 2 + yDiff ** 2)
@@ -23,4 +25,20 @@ const calcLinesLength = (lines) => {
   }, 0)
 }
 
-export { calcHypo, getLineData, calcLinesLength }
+const setLineLength = (line, length) => {
+  const { circles, config } = line
+  const { xDiff, yDiff } = getLineData(line)
+  const lineLength = calcHypo(line)
+  const additionalPercent = length / lineLength
+  const resX = xDiff * additionalPercent
+  const resY = yDiff * additionalPercent
+  const resXDiff = xDiff - resX
+  const resYDiff = yDiff - resY
+  const { end } = circles
+  end.x += resXDiff
+  end.y += resYDiff
+  config.points = circlesToPoints(circles)
+  return line
+}
+
+export { calcHypo, getLineData, calcLinesLength, setLineLength }

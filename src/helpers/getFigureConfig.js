@@ -27,6 +27,13 @@ const getConfigByPoints = (points) => {
   return { circles, lines }
 }
 
+const circlesToPoints = (circles) => {
+  return Object.values(circles).reduce((acc, circle) => {
+    const { x, y } = circle
+    return [...acc, x, y]
+  }, [])
+}
+
 const createCircles = (points) => {
   return chunk(points, 2).reduce((acc, chunk) => {
     const [x, y] = chunk
@@ -56,10 +63,7 @@ const createLine = ({ start, end }) => {
   if (end && end !== start) {
     circles.end = end
   }
-  const points = Object.values(circles).reduce((acc, circle) => {
-    const { x, y } = circle
-    return [...acc, x, y]
-  }, [])
+  const points = circlesToPoints(circles)
   const id = uniqid()
   return {
     config: {
@@ -71,4 +75,4 @@ const createLine = ({ start, end }) => {
   }
 }
 
-export { getFigureConfig, getConfigByPoints }
+export { getFigureConfig, getConfigByPoints, circlesToPoints }
