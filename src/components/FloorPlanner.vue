@@ -52,6 +52,9 @@ function stageMouseUpHandler() {
   }
   mouseMoveEvent.active = false
   const pointObjects = createLayerRef.value.getMarkedPoints()
+  if (pointObjects.length < 3) {
+    return
+  }
   createCustomFigure(pointObjects)
 }
 
