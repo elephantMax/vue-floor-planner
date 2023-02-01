@@ -135,7 +135,6 @@ const lineClick = async (e, lineId) => {
   }
   store.commit('setSelectedLine', lineId)
   await nextTick()
-  console.log(selectedLine.value)
   inputBoxRef.value.focus()
 }
 
@@ -186,7 +185,7 @@ function getMousePosition(e) {
           v-for="line in lines"
           :key="line.config.id"
           :line="line"
-          :selected="line.config.id === selectedLine?.id"
+          :selected="line.config.id === selectedLine?.config?.id"
           @click="lineClick"
         />
         <v-text

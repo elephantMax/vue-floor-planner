@@ -16,9 +16,7 @@ const props = defineProps({
 const emit = defineEmits(['click'])
 
 const lineConfig = computed(() => {
-  const config = {
-    ...props.line.config,
-  }
+  const config = { ...props.line.config }
   if (props.selected) {
     config.stroke = SELECTED_LINE_STROKE
   }
@@ -26,7 +24,7 @@ const lineConfig = computed(() => {
 })
 
 const clickHandler = (e) => {
-  emit('click', e, props.config.id)
+  emit('click', e, props.line.config.id)
 }
 </script>
 
