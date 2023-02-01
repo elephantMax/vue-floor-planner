@@ -37,5 +37,5 @@ const createLine = ({ x = 0, y = 0, points = [] }) => {
 </script>
 
 <template>
-  <v-line v-for="line in lines" :config="line" />
+  <v-line v-for="(line, index) in lines" :key="index" :config="line" />
 </template>

@@ -16,14 +16,15 @@ const configGetters = {
 }
 
 const getFigureConfig = (type) => {
-  const points = configGetters[type]() || []
+  const points = (configGetters[type] && configGetters[type]()) || []
+  const { circles, lines } = getConfigByPoints(points)
+  return { type, circles, lines }
+}
+
+const getConfigByPoints = (points) => {
   const circles = createCircles(points)
   const lines = createLinesFromCircles(circles)
-  return {
-    type,
-    circles,
-    lines,
-  }
+  return { circles, lines }
 }
 
 const createCircles = (points) => {
@@ -46,19 +47,28 @@ const createCircle = (x, y) => {
 const createLinesFromCircles = (circles) => {
   return circles.map((start, index) => {
     const end = circles[index + 1] || circles[0]
-    const id = uniqid()
-    return {
-      config: {
-        ...baseLineConfig,
-        id,
-        points: [start.x, start.y, end.x, end.y],
-      },
-      circles: {
-        start,
-        end,
-      },
-    }
+    return createLine({ start, end })
   })
 }
 
-export { getFigureConfig }
+const createLine = ({ start, end }) => {
+  const circles = { start }
+  if (end && end !== start) {
+    circles.end = end
+  }
+  const points = Object.values(circles).reduce((acc, circle) => {
+    const { x, y } = circle
+    return [...acc, x, y]
+  }, [])
+  const id = uniqid()
+  return {
+    config: {
+      ...baseLineConfig,
+      id,
+      points,
+    },
+    circles: circles,
+  }
+}
+
+export { getFigureConfig, getConfigByPoints }

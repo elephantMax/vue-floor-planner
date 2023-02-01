@@ -1,6 +1,7 @@
 <script setup>
 import { useStore } from 'vuex'
 import { FigureType } from '../enums/FigureTypes'
+import { computed } from 'vue'
 
 const store = useStore()
 
@@ -11,26 +12,64 @@ const Icon = {
   [FigureType.CUSTOM]: 'Р',
 }
 
-const figures = Object.values(FigureType).map((type) => ({
-  type,
-  icon: Icon[type],
-}))
+const items = computed(() => {
+  return Object.values(FigureType)
+    .map((type) => ({
+      icon: Icon[type],
+      visible: !drawMode.value,
+      onClick: () => {
+        store.dispatch('setFigure', type)
+        if (type === FigureType.CUSTOM) {
+          store.commit('setDrawMode', true)
+        }
+      },
+    }))
+    .filter(({ visible }) => visible)
+})
 
-const createFigureHandler = (type) => {
-  store.dispatch('setFigure', type)
+const drawnPoints = computed(() => {
+  return store.getters['drawnPoints']
+})
+
+const drawMode = computed(() => {
+  return store.getters['drawMode']
+})
+
+const canSaveCustomFigure = computed(() => {
+  return drawnPoints.value.length > 4
+})
+
+const save = () => {
+  if (canSaveCustomFigure.value) {
+    store.commit('setDrawMode', false)
+  }
+}
+
+const cancel = () => {
+  store.dispatch('setFigure', null)
 }
 </script>
 
 <template>
   <div class="figure-list">
     <div
-      v-for="figure in figures"
-      :key="figure.type"
+      v-for="item in items"
+      :key="item.type"
       class="figure-item"
-      @click="createFigureHandler(figure.type)"
+      @click="item.onClick"
     >
-      {{ figure.icon }}
+      {{ item.icon }}
     </div>
+    <template v-if="drawMode">
+      <div
+        class="figure-item"
+        :class="{ disabled: !canSaveCustomFigure }"
+        @click="save"
+      >
+        Сохранить
+      </div>
+      <div class="figure-item" @click="cancel">Отмена</div>
+    </template>
   </div>
 </template>
 
@@ -45,6 +84,11 @@ const createFigureHandler = (type) => {
   padding: 10px;
   border: 1px black solid;
   cursor: pointer;
+
+  &.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+  }
 
   &:not(:last-child) {
     margin-bottom: 10px;

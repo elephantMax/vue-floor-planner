@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { SELECTED_LINE_STROKE } from '../enums/constants'
 
 const props = defineProps({
-  config: {
+  line: {
     type: Object,
     default: () => ({}),
   },
@@ -17,7 +17,7 @@ const emit = defineEmits(['click'])
 
 const lineConfig = computed(() => {
   const config = {
-    ...props.config,
+    ...props.line.config,
   }
   if (props.selected) {
     config.stroke = SELECTED_LINE_STROKE

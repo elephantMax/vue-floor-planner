@@ -1,13 +1,12 @@
 <script setup>
 import { reactive, ref, computed, nextTick } from 'vue'
-import { calcLinesLength } from '../helpers/lineHelper'
 import { useResizeObserver } from '@vueuse/core'
 import FloorPlannerInputBox from './FloorPlannerInputBox.vue'
 import CanvasLine from './CanvasLine.vue'
-import { pixelsToMeters } from '../helpers/pixelsToMeters'
 import CanvasGrid from './CanvasGrid.vue'
 import { baseCircleConfig, GRID_CELL_SIZE } from '../enums/constants'
 import { useStore } from 'vuex'
+import CalculatedInfo from './CalculatedInfo.vue'
 
 const konvaConfig = reactive({
   width: 600,
@@ -52,6 +51,10 @@ const lineSizesTextConfigs = computed(() => {
   return store.getters['lineSizesTextConfigs']
 })
 
+const drawMode = computed(() => {
+  return store.getters['drawMode']
+})
+
 const selectedLineLength = computed({
   get() {
     return store.getters['selectedLineLength']
@@ -62,35 +65,6 @@ const selectedLineLength = computed({
       value,
     })
   },
-})
-
-const infoBlockConfig = computed(() => {
-  const width = 300
-  const height = 100
-  const padding = 25
-  const xPos = konvaConfig.width - width - padding
-  const yPos = konvaConfig.height - height - padding
-  return {
-    width,
-    height,
-    stroke: '#555',
-    strokeWidth: 5,
-    x: xPos,
-    y: yPos,
-  }
-})
-
-const perimeterTextConfig = computed(() => {
-  const padding = 10
-  const perimeterInPixels = calcLinesLength(lines.value)
-  const perimeter = pixelsToMeters(perimeterInPixels).toFixed(2)
-  return {
-    width: infoBlockConfig.value.width,
-    text: `P = ${perimeter}`,
-    x: infoBlockConfig.value.x + padding,
-    y: infoBlockConfig.value.y + padding,
-    fontSize: 20,
-  }
 })
 
 const circleDragMoveHandler = (e, shape) => {
@@ -156,6 +130,9 @@ const rectDragStartHandler = (e) => {
 
 const lineClick = async (e, lineId) => {
   e.cancelBubble = true
+  if (drawMode.value) {
+    return
+  }
   store.commit('setSelectedLine', lineId)
   await nextTick()
   console.log(selectedLine.value)
@@ -169,8 +146,12 @@ useResizeObserver(floorPlannerRef, (entries) => {
   konvaConfig.height = height
 })
 
-function stageClickHandler() {
+function stageClickHandler(e) {
   store.commit('setSelectedLine', null)
+  if (drawMode.value) {
+    const pos = getMousePosition(e)
+    store.dispatch('pushPoint', pos)
+  }
 }
 
 function getMousePosition(e) {
@@ -196,15 +177,15 @@ function getMousePosition(e) {
       <v-layer>
         <CanvasGrid :width="konvaConfig.width" :height="konvaConfig.height" />
         <v-rect
+          v-if="!drawMode"
           :config="groupFigure"
           @dragStart="rectDragStartHandler"
           @dragMove="rectDragMoveHandler"
         />
-        <!-- <v-text v-for="textConfig in borderTextConfigs" :config="textConfig" /> -->
         <CanvasLine
           v-for="line in lines"
           :key="line.config.id"
-          :config="line.config"
+          :line="line"
           :selected="line.config.id === selectedLine?.id"
           @click="lineClick"
         />
@@ -221,14 +202,17 @@ function getMousePosition(e) {
         <v-circle
           v-for="circle in circles"
           :key="circle.id"
-          :config="circle"
+          :config="{ ...circle, draggable: !drawMode }"
           @dragStart="circleDragStart"
           @dragMove="circleDragMoveHandler($event, circle)"
           @dragEnd="circleDragEnd"
         >
         </v-circle>
-        <v-rect :config="infoBlockConfig"></v-rect>
-        <v-text :config="perimeterTextConfig" />
+        <CalculatedInfo
+          v-if="!drawMode"
+          :width="konvaConfig.width"
+          :height="konvaConfig.height"
+        />
       </v-layer>
     </v-stage>
   </div>

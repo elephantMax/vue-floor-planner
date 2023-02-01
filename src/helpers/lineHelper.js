@@ -18,7 +18,7 @@ const getLineData = (line) => {
 
 const calcLinesLength = (lines) => {
   return lines.reduce((acc, line) => {
-    const hypo = calcHypo(line)
+    const hypo = calcHypo(line) || 0
     return acc + hypo
   }, 0)
 }

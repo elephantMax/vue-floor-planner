@@ -1,5 +1,6 @@
 import { createStore } from 'vuex'
-import { getFigureConfig } from '../helpers/getFigureConfig'
+import { TEXT_FONT_SIZE } from '../enums/constants'
+import { getConfigByPoints, getFigureConfig } from '../helpers/getFigureConfig'
 import { calcHypo, getLineData } from '../helpers/lineHelper'
 import { pixelsToMeters } from '../helpers/pixelsToMeters'
 
@@ -7,6 +8,7 @@ const defaultStore = () => ({
   drawMode: false,
   selectedLineId: null,
   figure: null,
+  drawnPoints: [],
 })
 
 const store = createStore({
@@ -20,10 +22,25 @@ const store = createStore({
       if (payload) {
         state.figure = null
         state.selectedLineId = null
+        return
       }
+      state.drawnPoints = []
     },
     setSelectedLine(state, lineId) {
+      if (state.drawMode) {
+        return
+      }
       state.selectedLineId = lineId
+    },
+    setDrawnPoints(state, payload) {
+      state.drawnPoints = payload
+    },
+    pushDrawPoint(state, point) {
+      const { x, y } = point
+      if (state.drawnPoints.length < 40) {
+        return state.drawnPoints.push(x, y)
+      }
+      console.warn('Максимум 20 точек')
     },
   },
   actions: {
@@ -35,6 +52,15 @@ const store = createStore({
     setCustomFigure({ commit }, config) {
       commit('setFigure', config)
       commit('setDrawMode', false)
+    },
+    pushPoint({ getters, commit }, point) {
+      const { drawMode, drawnPoints, figure } = getters
+      if (!drawMode) {
+        return
+      }
+      commit('pushDrawPoint', point)
+      const config = getConfigByPoints(drawnPoints)
+      commit('setFigure', { ...figure, ...config })
     },
     updateLineSize({ dispatch }, { line, value }) {
       if (!value) {
@@ -74,6 +100,7 @@ const store = createStore({
       return getters.figure?.circles || []
     },
     drawMode: (s) => s.drawMode,
+    drawnPoints: (s) => s.drawnPoints,
     selectedLine: (state, getters) => {
       const { lines } = getters
       return lines.find((l) => l.config.id === state.selectedLineId)
@@ -114,7 +141,7 @@ const store = createStore({
       return { x, y }
     },
     groupFigure: (_, getters) => {
-      const { fullSize, position } = getters
+      const { fullSize, position, drawMode } = getters
       const { width, height } = fullSize
       const { x, y } = position
 
@@ -125,14 +152,15 @@ const store = createStore({
         strokeWidth: 1,
         width: width + 20,
         height: height + 20,
-        draggable: true,
+        draggable: !drawMode,
       }
     },
     lineSizesTextConfigs: (_, getters) => {
-      // const PADDING = 30
-      const FONT_SIZE = 20
       const { lines } = getters
-      return lines.map((line) => {
+      const linesWithEnd = lines.filter((line) => {
+        return Boolean(line.circles.end)
+      })
+      return linesWithEnd.map((line) => {
         const { config, circles } = line
         const { id } = config
         const { start, end } = circles
@@ -140,17 +168,17 @@ const store = createStore({
         const y = (start.y + end.y) / 2
         const length = calcHypo(line)
         const lengthInMeters = pixelsToMeters(length).toFixed(2)
-        const width = lengthInMeters.length * FONT_SIZE
+        const width = lengthInMeters.length * TEXT_FONT_SIZE
         const padding = {
           x: 0,
           y: 0,
         }
         return {
           x: x + padding.x - width / 2,
-          y: y + padding.y - FONT_SIZE / 2,
+          y: y + padding.y - TEXT_FONT_SIZE / 2,
           text: lengthInMeters,
           width,
-          fontSize: FONT_SIZE,
+          fontSize: TEXT_FONT_SIZE,
           align: 'center',
           fill: '#fff',
           lineId: id,
