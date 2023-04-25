@@ -5,6 +5,7 @@ import CanvasGrid from './CanvasGrid.vue'
 import { useStore } from 'vuex'
 import FigureLayer from './Layers/FigureLayer.vue'
 import CreateLayer from './Layers/CreateLayer.vue'
+import { optimizePath } from '../helpers/optimizePath'
 
 const konvaConfig = reactive({
   width: 600,
@@ -55,23 +56,11 @@ function stageMouseUpHandler() {
 }
 
 const createCustomFigure = (points) => {
-  const arrayOfPoints = points.reduce((acc, { x, y }) => {
+  const optimizedPoints = optimizePath(points)
+  const arrayOfPoints = optimizedPoints.reduce((acc, { x, y }) => {
     return [...acc, x, y]
   }, [])
   store.dispatch('setCustomFigure', arrayOfPoints)
-}
-
-function getMousePosition(e) {
-  if (!stageRef.value) {
-    return { x: 0, y: 0 }
-  }
-  const stage = stageRef.value.getStage()
-  const { content } = stage
-  const { x: offsetX, y: offsetY } = content.getBoundingClientRect()
-  const { clientX, clientY } = e.evt
-  const xPos = clientX - offsetX
-  const yPos = clientY - offsetY
-  return { x: xPos, y: yPos }
 }
 </script>
 
