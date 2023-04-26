@@ -176,6 +176,7 @@ const rectDragStartHandler = (e) => {
     :key="sizeText.lineId"
     :config="sizeText"
     @click="selectLine($event, sizeText.lineId)"
+    @tap="selectLine($event, sizeText.lineId)"
   />
   <v-circle
     v-if="tempDraggingCircle.visible"

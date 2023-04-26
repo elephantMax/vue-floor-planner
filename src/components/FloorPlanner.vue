@@ -1,29 +1,31 @@
 <script setup>
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, provide } from 'vue'
 import { useResizeObserver } from '@vueuse/core'
 import CanvasGrid from './CanvasGrid.vue'
 import { useStore } from 'vuex'
 import FigureLayer from './Layers/FigureLayer.vue'
 import CreateLayer from './Layers/CreateLayer.vue'
-import { optimizePath } from '../helpers/optimizePath'
+import { useDrawMode } from '../helpers/useDrawMode'
 
 const konvaConfig = reactive({
   width: 600,
   height: 600,
 })
 
+const drawModeHelper = useDrawMode(konvaConfig)
+
+const {
+  createLayerRef,
+  drawMode,
+  mouseMoveEvent,
+  markedPoints,
+  createLayoutPoints,
+} = drawModeHelper
+
 const floorPlannerRef = ref(null)
 const stageRef = ref(null)
-const createLayerRef = ref(null)
-const mouseMoveEvent = reactive({
-  active: false,
-})
 
 const store = useStore()
-
-const drawMode = computed(() => {
-  return store.getters['drawMode']
-})
 
 useResizeObserver(floorPlannerRef, (entries) => {
   const [entry] = entries
@@ -48,20 +50,52 @@ function stageMouseUpHandler() {
     return
   }
   mouseMoveEvent.active = false
-  const pointObjects = createLayerRef.value.getMarkedPoints()
-  if (pointObjects.length < 3) {
-    return
-  }
-  createCustomFigure(pointObjects)
+  drawModeHelper.createCustomFigure()
 }
 
-const createCustomFigure = (points) => {
-  const optimizedPoints = optimizePath(points)
-  const arrayOfPoints = optimizedPoints.reduce((acc, { x, y }) => {
-    return [...acc, x, y]
-  }, [])
-  store.dispatch('setCustomFigure', arrayOfPoints)
+const touchMoveHandler = (e) => {
+  const { evt } = e
+  const touch = evt.touches[0]
+  const { clientX, clientY, radiusX, radiusY } = touch
+  const { x, y } = getMousePosition({ clientX, clientY })
+  const pressedPoint = drawModeHelper.getPressedPoint(x, y, radiusX, radiusY)
+  if (!pressedPoint) {
+    return
+  }
+  const target = getPointTarget(pressedPoint)
+  if (target) {
+    drawModeHelper.pushMarkedPoint(target, pressedPoint)
+  }
 }
+
+function getMousePosition({ clientX, clientY }) {
+  if (!stageRef.value) {
+    return { x: 0, y: 0 }
+  }
+  const stage = stageRef.value.getStage()
+  const { content } = stage
+  const { x: offsetX, y: offsetY } = content.getBoundingClientRect()
+  const xPos = clientX - offsetX
+  const yPos = clientY - offsetY
+  return { x: xPos, y: yPos }
+}
+
+function getPointTarget(point) {
+  if (!point) {
+    return null
+  }
+  const stage = stageRef.value?.getStage()
+  if (!stage) {
+    return null
+  }
+  return stage.findOne((element) => element.id() === point.id)
+}
+
+provide('pushPoint', drawModeHelper.pushMarkedPoint)
+provide(
+  'markedPoints',
+  computed(() => markedPoints)
+)
 </script>
 
 <template>
@@ -70,8 +104,12 @@ const createCustomFigure = (points) => {
       ref="stageRef"
       :config="konvaConfig"
       @click="stageClickHandler"
+      @tap="stageClickHandler"
       @mousedown="stageMouseDownHandler"
       @mouseup="stageMouseUpHandler"
+      @touchstart="stageMouseDownHandler"
+      @touchend="stageMouseUpHandler"
+      @touchmove="touchMoveHandler"
     >
       <v-layer>
         <CanvasGrid :width="konvaConfig.width" :height="konvaConfig.height" />
@@ -85,8 +123,8 @@ const createCustomFigure = (points) => {
           ref="createLayerRef"
           :width="konvaConfig.width"
           :height="konvaConfig.height"
+          :points="createLayoutPoints"
           :mouse-active="mouseMoveEvent.active"
-          @limit="createCustomFigure"
         />
       </v-layer>
     </v-stage>

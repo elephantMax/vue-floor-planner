@@ -43,6 +43,6 @@ const clickHandler = (e) => {
 </script>
 
 <template>
-  <v-arrow :config="arrowConfig" @click="clickHandler" />
-  <v-line :config="lineConfig" @click="clickHandler" />
+  <v-arrow :config="arrowConfig" @click="clickHandler" @tap="clickHandler" />
+  <v-line :config="lineConfig" @click="clickHandler" @tap="clickHandler" />
 </template>
