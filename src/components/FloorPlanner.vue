@@ -6,6 +6,7 @@ import { useStore } from 'vuex'
 import FigureLayer from './Layers/FigureLayer.vue'
 import CreateLayer from './Layers/CreateLayer.vue'
 import { useDrawMode } from '../helpers/useDrawMode'
+import { TOUCH_RADIUS } from '../enums/constants'
 
 const konvaConfig = reactive({
   width: 600,
@@ -55,10 +56,17 @@ function stageMouseUpHandler() {
 
 const touchMoveHandler = (e) => {
   const { evt } = e
+  evt.preventDefault()
   const touch = evt.touches[0]
-  const { clientX, clientY, radiusX, radiusY } = touch
+  const { clientX, clientY } = touch
   const { x, y } = getMousePosition({ clientX, clientY })
-  const pressedPoint = drawModeHelper.getPressedPoint(x, y, radiusX, radiusY)
+
+  const pressedPoint = drawModeHelper.getPressedPoint(
+    x,
+    y,
+    TOUCH_RADIUS,
+    TOUCH_RADIUS
+  )
   if (!pressedPoint) {
     return
   }

@@ -3,6 +3,7 @@ const SELECTED_LINE_STROKE = '#faea00'
 const CIRCLE_COLOR = '#fff'
 const LINE_STROKE = '#000'
 const TEXT_FONT_SIZE = 20
+const TOUCH_RADIUS = 25
 
 const baseCircleConfig = {
   fill: CIRCLE_COLOR,
@@ -22,4 +23,5 @@ export {
   TEXT_FONT_SIZE,
   baseLineConfig,
   baseCircleConfig,
+  TOUCH_RADIUS,
 }
