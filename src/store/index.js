@@ -125,8 +125,6 @@ const store = createStore({
       return {
         x: x - 10,
         y: y - 10,
-        stroke: 'black',
-        strokeWidth: 1,
         width: width + 20,
         height: height + 20,
         draggable: !drawMode,
